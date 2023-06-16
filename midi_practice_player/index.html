@@ -1,0 +1,104 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Midi Practice Aid</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta property="og:title" content="">
+    <meta property="og:type" content="">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="">
+
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="apple-touch-icon" href="icon.png">
+    <!-- Place favicon.ico in the root directory -->
+
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+
+    <meta name="theme-color" content="#fafafa">
+    <script src="js/vendor/modernizr-3.11.2.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.5.0"></script>
+    <script src="js/main.js"></script>
+    <style>
+        body {
+            text-align: center;
+        }
+        midi-player {
+            width: 100%;
+            font-size: 200%;
+        }
+        midi-visualizer {
+            width: 100%;
+        }
+        midi-visualizer svg rect.note {
+            opacity: 0.4;
+            stroke-width: 2;
+        }
+        midi-visualizer svg rect.note.active {
+           opacity: 1;
+           stroke: #000;
+        }
+        #tempo-slider {
+            padding: 20px;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <midi-player
+        id="midi-player"
+        src="https://magenta.github.io/magenta-js/music/demos/melody.mid"
+        sound-font
+        visualizer="#midi-viz">
+    </midi-player>
+    <midi-visualizer type="piano-roll" id="midi-viz"></midi-visualizer>
+    <input
+        type="file"
+        id="midi-file-selection"
+        accept=".midi,.mid,.MIDI,.MID" />
+    <div id="tempo">
+        <input id="tempo-slider" type="range" value="60" min="1" max="500" oninput="this.nextElementSibling.value = this.value">
+        <output>60</output> BPM
+    </div>
+    <script>
+        (function() {
+            var file_upload = document.getElementById("midi-file-selection");
+            var player = document.getElementById("midi-player");
+            var viz = document.getElementById("midi-viz");
+
+            player.addEventListener("load", on_load);
+            player.addEventListener("start", on_play);
+
+            function on_upload () {
+                var file = file_upload.files[0];
+                var file_url = URL.createObjectURL(file);
+                player.src = file_url;
+            }
+
+            function on_load () {
+                // fit the whole midi visualization on the screen so it corresponds to the playhead
+                var screen_width = document.body.offsetWidth;
+                var pixels_per_time_step = screen_width / player.duration;
+                viz.config = {
+                    pixelsPerTimeStep: pixels_per_time_step // TimeStep is 1 second
+                }
+
+                // TODO reformat midi to play all notes on channel 0
+                // TODO adjust tempo
+            }
+
+            function on_play () {
+                player.player.desiredQPM = document.getElementById("tempo-slider").value;
+            }
+            document.getElementById("midi-file-selection").addEventListener("change", on_upload, false)
+        })();
+    </script>
+</body>
+
+</html>
